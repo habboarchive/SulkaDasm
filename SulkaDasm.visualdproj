@@ -206,16 +206,20 @@
   <Folder name="rabcdasm">
    <File path="..\..\..\..\Libraries\rabcdasm\abcexport.d" />
    <File path="..\..\..\..\Libraries\rabcdasm\abcfile.d" />
+   <File path="..\..\..\..\Libraries\rabcdasm\abcreplace.d" />
    <File path="..\..\..\..\Libraries\rabcdasm\asprogram.d" />
+   <File path="..\..\..\..\Libraries\rabcdasm\assembler.d" />
    <File path="..\..\..\..\Libraries\rabcdasm\autodata.d" />
    <File path="..\..\..\..\Libraries\rabcdasm\common.d" />
    <File path="..\..\..\..\Libraries\rabcdasm\disassembler.d" />
    <File path="..\..\..\..\Libraries\rabcdasm\murmurhash2a.d" />
+   <File path="..\..\..\..\Libraries\rabcdasm\rabcasm.d" />
    <File path="..\..\..\..\Libraries\rabcdasm\rabcdasm.d" />
    <File path="..\..\..\..\Libraries\rabcdasm\swffile.d" />
    <File path="..\..\..\..\Libraries\rabcdasm\zlibx.d" />
   </Folder>
   <File path="engine.d" />
   <File path="main.d" />
+  <File path="utils.d" />
  </Folder>
 </DProject>
