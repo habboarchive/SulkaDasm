@@ -1,7 +1,7 @@
 import std.stdio;
 import engine;
 
-string versionNumber = "1.0.0";
+string versionNumber = "1.0.1";
 
 void main(string[] args)
 {
@@ -18,7 +18,7 @@ void main(string[] args)
 	string rsaE = args[3];
 
 	Engine engine = new Engine(rsaN, rsaE);
-	engine.executeCrack(filePath);
+	engine.executePatch(filePath);
 }
 
 void printLogo() {

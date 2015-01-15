@@ -8,6 +8,7 @@ import std.conv;
 import std.algorithm;
 import std.container;
 import std.array;
+import std.stream;
 
 import abcexport;
 import abcreplace;
@@ -37,22 +38,25 @@ class Engine {
 
 	this(string rsaN, string rsaE) {
 		this.rsaN = rsaN;
-		this.rsaE = rsaE;
-
-		createAndSetTempDirectory();
+		this.rsaE = rsaE;		
 	}
 
 	private void createAndSetTempDirectory() {
-		this.tempDirectory = getcwd() ~ "\\tmp\\";
+		this.tempDirectory = getcwd() ~ "\\.tmp\\";
+
 		if(!exists(this.tempDirectory)) {
 			mkdir(this.tempDirectory);
 		} else {
 			cleanupTmpDirectory();
 			mkdir(this.tempDirectory);
 		}
+
+		version(Windows) {
+			setAttributes(tempDirectory, 0x2);
+		}
 	}
 
-	void executeCrack(string filePath) {
+	void executePatch(string filePath) {
 		if(!exists(filePath)) 
 			throw new Exception("Specified file not found");
 
@@ -63,6 +67,7 @@ class Engine {
 
 		try
 		{
+			createAndSetTempDirectory();
 			prepareFile();
 			exportAbc();
 			extractAbc();
