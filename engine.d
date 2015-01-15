@@ -38,7 +38,7 @@ class Engine {
 
 	this(string rsaN, string rsaE) {
 		this.rsaN = rsaN;
-		this.rsaE = rsaE;		
+		this.rsaE = rsaE;
 	}
 
 	private void createAndSetTempDirectory() {
@@ -52,7 +52,7 @@ class Engine {
 		}
 
 		version(Windows) {
-			setAttributes(tempDirectory, 0x2);
+			setAttributes(tempDirectory, 0x2); // Hide
 		}
 	}
 
@@ -60,14 +60,15 @@ class Engine {
 		if(!exists(filePath)) 
 			throw new Exception("Specified file not found");
 
+		createAndSetTempDirectory();
+
 		this.originalFilePath = filePath;		
 		this.fileName = baseName(filePath);
 		this.fileNameWihoutExtension = baseName(stripExtension(filePath));
 		this.tempFilePath = tempDirectory ~ fileName;
 
 		try
-		{
-			createAndSetTempDirectory();
+		{			
 			prepareFile();
 			exportAbc();
 			extractAbc();
@@ -111,6 +112,8 @@ class Engine {
 	private void findRequiredFiles() {
 		writeln("Searching required asasm files...");
 
+		auto elementTypeCount = [ __traits(allMembers, elementType) ].length;
+
 		auto asasmFiles = dirEntries(tempDirectory, "*.asasm", SpanMode.depth);
 		foreach(asasm; asasmFiles) {
 			auto asasmContent = to!string(cast(char[])read(asasm));
@@ -139,10 +142,10 @@ class Engine {
 				}
 			}
 
-			if(elementList.length == 3) break;
+			if(elementList.length == elementTypeCount) break;
 		}
 
-		if(elementList.length != 3) {
+		if(elementList.length != elementTypeCount) {
 			throw new Exception("Could not found all required files");
 		}
 	}
