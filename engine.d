@@ -9,6 +9,7 @@ import std.algorithm;
 import std.container;
 import std.array;
 import std.stream;
+import std.parallelism;
 
 import abcexport;
 import abcreplace;
@@ -31,10 +32,9 @@ class Engine {
 
 	string[] abcElementList;
 
+	enum patchStat { finding, started, success }
 	enum elementType { domainValidator, connectionHost, rsaKey }
 	string[elementType] elementList;
-
-	enum patchStat { finding, started, success }
 
 	this(string rsaN, string rsaE) {
 		this.rsaN = rsaN;
@@ -102,7 +102,7 @@ class Engine {
 		writeln("Extracting abc resources...");
 
 		auto abcFiles = dirEntries(tempDirectory,"*.abc", SpanMode.shallow);
-		foreach(abc; abcFiles) {
+		foreach(abc; parallel(abcFiles)) {
 			writeln("Extracting " ~ baseName(abc.name));
 			abcElementList ~= baseName(stripExtension(abc.name));
 			rabcdasm.execute(abc.name);
@@ -115,7 +115,10 @@ class Engine {
 		auto elementTypeCount = [ __traits(allMembers, elementType) ].length;
 
 		auto asasmFiles = dirEntries(tempDirectory, "*.asasm", SpanMode.depth);
-		foreach(asasm; asasmFiles) {
+
+		auto workers = new TaskPool();
+
+		foreach(asasm; workers.parallel(asasmFiles)) {
 			auto asasmContent = to!string(cast(char[])read(asasm));
 
 			if(!canFind(elementList.keys, elementType.domainValidator)) {
@@ -141,19 +144,21 @@ class Engine {
 					continue;
 				}
 			}
-
-			if(elementList.length == elementTypeCount) break;
+			
+			if(elementList.length == elementTypeCount) {
+				workers.stop();
+			}
 		}
 
 		if(elementList.length != elementTypeCount) {
-			throw new Exception("Could not found all required files");
+			throw new Exception("Could not found all required files, need to be updated??");
 		}
 	}
 
 	private void patchFiles() {
 		writeln("Patching files...");
 
-		foreach (element; elementList.keys.sort)
+		foreach (element; parallel(elementList.keys.sort))
 		{
 			auto newFileContent = appender!string();
 			patchStat stat = patchStat.finding;
@@ -266,9 +271,8 @@ class Engine {
 					throw new Exception("Unknown element Type of " ~ to!string(element));
 			}
 
-			if(stat != patchStat.success) {
-				throw new Exception("Failed to patch " ~ to!string(element));
-			}
+			if(stat != patchStat.success)
+				throw new Exception("Failed to patch " ~ to!string(element) ~ ", need to be updated??");
 
 			std.file.write(elementList[element], newFileContent.data);
 			writeln(to!string(element) ~ " sucessfully patched!");
@@ -308,7 +312,7 @@ class Engine {
 		try {
 			rmdirRecurse(tempDirectory);
 		} catch (Exception e) {
-			writeln("Failed to delete file:" ~ e.toString());
+			writeln("Failed to delete temporary files:" ~ e.toString());
 		}
 	}
 }
