@@ -42,7 +42,7 @@ class Engine {
 	}
 
 	private void createAndSetTempDirectory() {
-		this.tempDirectory = getcwd() ~ "\\.tmp\\";
+		this.tempDirectory = getcwd() ~ "\\tmp\\";
 
 		if(!exists(this.tempDirectory)) {
 			mkdir(this.tempDirectory);
@@ -52,7 +52,7 @@ class Engine {
 		}
 
 		version(Windows) {
-			setAttributes(tempDirectory, 0x2); // Hide
+			//setAttributes(tempDirectory, 0x2); // Hide
 		}
 	}
 
@@ -78,7 +78,7 @@ class Engine {
 			replaceAbc();
 			preCleanupAction();
 
-			writeln(fileName ~ " was sucessfully patched!");
+			writefln("%s was sucessfully patched!", fileName);
 		}
 		catch(Exception e) {
 			throw e;
@@ -103,7 +103,7 @@ class Engine {
 
 		auto abcFiles = dirEntries(tempDirectory,"*.abc", SpanMode.shallow);
 		foreach(abc; parallel(abcFiles)) {
-			writeln("Extracting " ~ baseName(abc.name));
+			writefln("Extracting %s", baseName(abc.name));
 			abcElementList ~= baseName(stripExtension(abc.name));
 			rabcdasm.execute(abc.name);
 		}
@@ -124,7 +124,7 @@ class Engine {
 			if(!canFind(elementList.keys, elementType.domainValidator)) {
 				if(canFind(asasmContent, r"^([\\-a-z0-9.]+\\.)?varoke\\.net$")) {
 					elementList[elementType.domainValidator] = asasm.name;
-					writeln("Found domainValidator: " ~ baseName(asasm.name));
+					writefln("Found domainValidator: %s", baseName(asasm.name));
 					continue;
 				}
 			}
@@ -132,7 +132,7 @@ class Engine {
 			if(!canFind(elementList.keys, elementType.connectionHost)) {
 				if(canFind(asasmContent, "Tried to connect to proxy but connection was null")) {
 					elementList[elementType.connectionHost] = asasm.name;
-					writeln("Found connectionHost: " ~ baseName(asasm.name));
+					writefln("Found connectionHost: %s", baseName(asasm.name));
 					continue;
 				}
 			}
@@ -140,7 +140,7 @@ class Engine {
 			if(!canFind(elementList.keys, elementType.rsaKey)) {
 				if(canFind(asasmContent, "Invalid DH prime and generator")) {
 					elementList[elementType.rsaKey] = asasm.name;
-					writeln("Found rsaKey: " ~ baseName(asasm.name));
+					writefln("Found rsaKey: %s", baseName(asasm.name));
 					continue;
 				}
 			}
@@ -199,7 +199,6 @@ class Engine {
 					break;
 
 				case elementType.connectionHost:
-					bool canExecutePrePatch = false;
 					bool firstPatchLocked = false;
 					bool secondPatchLocked = true;
 
@@ -208,17 +207,10 @@ class Engine {
 							if(!firstPatchLocked) {							
 								if(stat == patchStat.finding && canFind(line, "parseInt")) {
 									stat = patchStat.started;
-								} else if(stat == patchStat.started && canFind(line, "getlocal0")) {
-									newFileContent.put(line ~ asasmReturn);
+								} else if(stat == patchStat.started && canFind(line, "getlocal            6")) {
 									newFileContent.put(asasmSpace ~ " findpropstrict      QName(PackageNamespace(\"\"), \"getProperty\")" ~ asasmReturn);
 									newFileContent.put(asasmSpace ~ " pushstring          \"connection.info.host\"" ~ asasmReturn);
 									newFileContent.put(asasmSpace ~ " callproperty        QName(PackageNamespace(\"\"), \"getProperty\"), 1" ~ asasmReturn);
-									canExecutePrePatch = true;
-									continue;
-								}
-
-								if(canExecutePrePatch) {
-									canExecutePrePatch = false;
 									firstPatchLocked = true;
 									secondPatchLocked = false;
 									continue;
@@ -275,7 +267,7 @@ class Engine {
 				throw new Exception("Failed to patch " ~ to!string(element) ~ ", need to be updated??");
 
 			std.file.write(elementList[element], newFileContent.data);
-			writeln(to!string(element) ~ " sucessfully patched!");
+			writefln("%s sucessfully patched!", to!string(element));
 		}
 	}
 
@@ -284,7 +276,7 @@ class Engine {
 
 		foreach (abc; abcElementList) {
 			string asasmPath = format("%s\\%s.main.asasm", tempDirectory ~ abc, abc);
-			writeln("Replacing " ~ abc);
+			writefln("Replacing %s", abc);
 			rabcasm.execute(asasmPath);
 		}
 	}
@@ -295,14 +287,14 @@ class Engine {
 		uint count;
 		foreach (abc; abcElementList) {
 			string abcPath = format("%s\\%s.main.abc", tempDirectory ~ abc, abc);
-			writeln("Replacing " ~ abc);
+			writefln("Replacing %s", abc);
 			abcreplace.execute([tempFilePath, to!string(count++), abcPath]);
 		}
 	}
 
 	private void preCleanupAction() {
 		writeln("Backup of the original file...");
-		rename(originalFilePath, originalFilePath ~ ".bak");
+		rename(originalFilePath, setExtension(originalFilePath, ".bak"));
 		writeln("Copy the patched file...");
 		copy(tempFilePath, originalFilePath);
 	}
@@ -312,7 +304,7 @@ class Engine {
 		try {
 			rmdirRecurse(tempDirectory);
 		} catch (Exception e) {
-			writeln("Failed to delete temporary files:" ~ e.toString());
+			writefln("Failed to delete temporary files: %s", e.toString());
 		}
 	}
 }
