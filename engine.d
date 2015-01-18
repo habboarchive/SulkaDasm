@@ -84,7 +84,7 @@ class Engine {
 			throw e;
 		}
 		finally {
-			//cleanupTmpDirectory();
+			cleanupTmpDirectory();
 		}
 	}
 
@@ -150,16 +150,14 @@ class Engine {
 			}
 		}
 
-		if(elementList.length != elementTypeCount) {
+		if(elementList.length != elementTypeCount)
 			throw new Exception("Could not found all required files, need to be updated??");
-		}
 	}
 
 	private void patchFiles() {
 		writeln("Patching files...");
 
-		foreach (element; parallel(elementList.keys.sort))
-		{
+		foreach (element; parallel(elementList.keys.sort)) {
 			auto newFileContent = appender!string();
 			patchStat stat = patchStat.finding;
 
@@ -169,7 +167,9 @@ class Engine {
 					bool firstPatchLocked = false;
 					bool secondPatchLocked = true;
 
-					foreach(string line; utils.readLines(cast(string)(read(elementList[element])))) {
+					auto asasmContent = to!string(cast(char[])read(elementList[element]));
+
+					foreach(string line; utils.readLines(asasmContent)) {
 						if(stat != patchStat.success) {
 							if(!firstPatchLocked) {
 								if(stat == patchStat.finding && canFind(line, "getlocal0")) {
@@ -202,7 +202,9 @@ class Engine {
 					bool firstPatchLocked = false;
 					bool secondPatchLocked = true;
 
-					foreach(string line; utils.readLines(cast(string)(read(elementList[element])))) {
+					auto asasmContent = to!string(cast(char[])read(elementList[element]));
+
+					foreach(string line; utils.readLines(asasmContent)) {
 						if(!stat != patchStat.success) {
 							if(!firstPatchLocked) {							
 								if(stat == patchStat.finding && canFind(line, "parseInt")) {
@@ -235,7 +237,9 @@ class Engine {
 				case elementType.rsaKey:
 					bool canExecutePrePatch = false;
 
-					foreach(string line; utils.readLines(cast(string)(read(elementList[element])))) {
+					auto asasmContent = to!string(cast(char[])read(elementList[element]));
+
+					foreach(string line; utils.readLines(asasmContent)) {
 						if(!stat != patchStat.success) {
 							if(stat == patchStat.finding && canFind(line, "KeyObfuscator")) {								
 								stat = patchStat.started;
@@ -284,7 +288,7 @@ class Engine {
 	private void replaceAbc() {
 		writeln("Replacing abc resources...");
 
-		uint count;
+		uint count;		
 		foreach (abc; abcElementList) {
 			string abcPath = format("%s\\%s.main.abc", tempDirectory ~ abc, abc);
 			writefln("Replacing %s", abc);
