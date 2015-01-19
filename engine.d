@@ -42,7 +42,7 @@ class Engine {
 	}
 
 	private void createAndSetTempDirectory() {
-		this.tempDirectory = getcwd() ~ "\\tmp\\";
+		this.tempDirectory = getcwd() ~ "\\.tmp\\";
 
 		if(!exists(this.tempDirectory)) {
 			mkdir(this.tempDirectory);
@@ -52,7 +52,7 @@ class Engine {
 		}
 
 		version(Windows) {
-			//setAttributes(tempDirectory, 0x2); // Hide
+			setAttributes(tempDirectory, 0x2); // Hide
 		}
 	}
 
