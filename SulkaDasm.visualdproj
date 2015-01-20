@@ -422,6 +422,7 @@
   </Folder>
   <File path="engine.d" />
   <File path="main.d" />
+  <File path="properties.d" />
   <File path="utils.d" />
  </Folder>
 </DProject>

@@ -1,33 +1,29 @@
-import std.stdio;
-import engine;
-
-string versionNumber = "1.0.2";
+import std.stdio, std.getopt;
+import engine, properties;
 
 void main(string[] args)
 {
     printLogo();
 
-	if (args.length < 4) {
-		writeln("Invalid arguments");
-		printHelp();
-		return;
+	if (args.length < 2) {
+		throw new Exception("Usage: SulkaDasm.exe file.swf\nOptionnaly:--rsaN | --rsaE");
 	}
 
-	string filePath = args[1];
-	string rsaN = args[2];
-	string rsaE = args[3];
+	string rsaN = Properties.defaultRsaN;
+	string rsaE = Properties.defaultRsaE;
+
+	getopt(
+		   args,
+		   "rsaN",  &rsaN,
+		   "rsaE",  &rsaE);
 
 	auto engine = new Engine(rsaN, rsaE);
-	engine.executePatch(filePath);
+	engine.executePatch(args[1]);
 }
 
 void printLogo() {
 	writeln("############################");
-	writeln("SulkaDasm version " ~ versionNumber);
+	writeln("SulkaDasm version " ~ Properties.appVersion);
 	writeln("Written by Anthony93260");
 	writeln("############################");
-}
-
-void printHelp() {
-	writeln("Usage: SulkaDasm.exe [file Path] [RSA N] [RSA E]");
 }

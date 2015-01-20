@@ -11,45 +11,39 @@ import std.array;
 import std.stream;
 import std.parallelism;
 
-import abcexport;
-import abcreplace;
-import rabcdasm;
-import rabcasm;
+import abcexport, abcreplace, rabcdasm, rabcasm;
 import utils;
 
 class Engine {
 	string rsaN;
 	string rsaE;
-	string tempDirectory;
 
-	string originalFilePath;
+	string tempDirectory;
 	string tempFilePath;
+	string originalFilePath;	
 	string fileName;
 	string fileNameWihoutExtension;
 
 	string asasmSpace = "     ";
-	string asasmReturn = "\r\n";
-
-	string[] abcElementList;
+	string asasmReturn = "\r\n";	
 
 	enum patchStat { finding, started, success }
 	enum elementType { domainValidator, connectionHost, rsaKey }
 	string[elementType] elementList;
+	string[] abcElementList;
 
 	this(string rsaN, string rsaE) {
 		this.rsaN = rsaN;
 		this.rsaE = rsaE;
 	}
 
-	private void createAndSetTempDirectory() {
+	private void createTempDirectory() {
 		this.tempDirectory = getcwd() ~ "\\.tmp\\";
 
-		if(!exists(this.tempDirectory)) {
-			mkdir(this.tempDirectory);
-		} else {
+		if(exists(this.tempDirectory)) {
 			cleanupTmpDirectory();
-			mkdir(this.tempDirectory);
 		}
+		mkdir(this.tempDirectory);
 
 		version(Windows) {
 			setAttributes(tempDirectory, 0x2); // Hide
@@ -60,7 +54,7 @@ class Engine {
 		if(!exists(filePath)) 
 			throw new Exception("Specified file not found");
 
-		createAndSetTempDirectory();
+		createTempDirectory();
 
 		this.originalFilePath = filePath;		
 		this.fileName = baseName(filePath);
@@ -305,10 +299,6 @@ class Engine {
 
 	private void cleanupTmpDirectory() {
 		writeln("Deleting temporary directory..");
-		try {
-			rmdirRecurse(tempDirectory);
-		} catch (Exception e) {
-			writefln("Failed to delete temporary files: %s", e.toString());
-		}
+		rmdirRecurse(tempDirectory);
 	}
 }
