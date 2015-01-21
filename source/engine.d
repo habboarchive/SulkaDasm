@@ -293,7 +293,8 @@ class Engine {
 		foreach (ref abc; abcElementList) {
 			string abcPath = format("%s/%s.main.abc", tempDirectory ~ abc, abc);
 			writefln("Replacing %s", abc);
-			abcreplace.execute([tempFilePath, to!string(count++), abcPath]);
+			auto index = to!string(count++);
+			abcreplace.execute([tempFilePath, index, abcPath]);
 		}
 	}
 
