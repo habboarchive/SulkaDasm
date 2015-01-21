@@ -1,0 +1,19 @@
+{
+    "version": "1.0.0",
+    "name": "rabcdasm",
+    "description": "Robust ABC (ActionScript Bytecode) [Dis-]Assembler",
+    "copyright": "Copyright © 2015, CyberShadow",
+    "authors": [ "CyberShadow" ],
+    "importPaths": [
+		"source/"
+	],
+	"configurations": [
+		{
+			"targetType": "library",
+			"name": "library"
+		}
+	],
+	"sourcePaths": [
+		"source/"
+	]
+}

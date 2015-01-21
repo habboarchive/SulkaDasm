@@ -1,0 +1,12 @@
+{
+	"Version": 1,
+	"Files": {
+		"source/": "Directory",
+		"source/abcexport.d": "RegularFile",
+		"source/swffile.d": "RegularFile",
+		"source/zlibx.d": "RegularFile",
+		"dub.json": "RegularFile",
+		".gitignore": "RegularFile",
+		"journal.json": "RegularFile"
+	}
+}

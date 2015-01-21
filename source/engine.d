@@ -8,16 +8,16 @@ import std.conv;
 import std.algorithm;
 import std.container;
 import std.array;
-import std.stream;
 import std.parallelism;
-
+import colorize : fg, color, cwriteln, cwritefln;
 import abcexport, abcreplace, rabcdasm, rabcasm;
 import utils;
 
 class Engine {
 	string rsaN;
 	string rsaE;
-
+	bool disableRc4;
+	
 	string tempDirectory;
 	string tempFilePath;
 	string originalFilePath;	
@@ -25,29 +25,17 @@ class Engine {
 	string fileNameWihoutExtension;
 
 	string asasmSpace = "     ";
-	string asasmReturn = "\r\n";	
+	string asasmReturn = "\r\n";
 
 	enum patchStat { finding, started, success }
 	enum elementType { domainValidator, connectionHost, rsaKey }
 	string[elementType] elementList;
 	string[] abcElementList;
 
-	this(string rsaN, string rsaE) {
+	this(string rsaN, string rsaE, bool disableRc4) {
 		this.rsaN = rsaN;
 		this.rsaE = rsaE;
-	}
-
-	private void createTempDirectory() {
-		this.tempDirectory = getcwd() ~ "\\.tmp\\";
-
-		if(exists(this.tempDirectory)) {
-			cleanupTmpDirectory();
-		}
-		mkdir(this.tempDirectory);
-
-		version(Windows) {
-			setAttributes(tempDirectory, 0x2); // Hide
-		}
+		this.disableRc4 = disableRc4;
 	}
 
 	void executePatch(string filePath) {
@@ -72,14 +60,33 @@ class Engine {
 			replaceAbc();
 			preCleanupAction();
 
-			writefln("%s was sucessfully patched!", fileName);
+			cwritefln("%s was sucessfully patched!".color(fg.green), fileName);
 		}
 		catch(Exception e) {
 			throw e;
 		}
 		finally {
-			cleanupTmpDirectory();
+			cleanupTempDirectory();
 		}
+	}
+
+	private void createTempDirectory() {
+		this.tempDirectory = getcwd() ~ "\\.tmp\\";
+
+		if(exists(this.tempDirectory)) {
+			cleanupTempDirectory();
+		}
+
+		mkdir(this.tempDirectory);
+
+		version(Windows) {
+			setAttributes(tempDirectory, 0x2); // Hide
+		}
+	}
+
+	private void cleanupTempDirectory() {
+		writeln("Deleting temporary directory..");
+		rmdirRecurse(tempDirectory);
 	}
 
 	private void prepareFile() {
@@ -118,7 +125,7 @@ class Engine {
 			if(!canFind(elementList.keys, elementType.domainValidator)) {
 				if(canFind(asasmContent, r"^([\\-a-z0-9.]+\\.)?varoke\\.net$")) {
 					elementList[elementType.domainValidator] = asasm.name;
-					writefln("Found domainValidator: %s", baseName(asasm.name));
+					cwritefln("Found domainValidator: %s".color(fg.cyan), baseName(asasm.name));
 					continue;
 				}
 			}
@@ -126,7 +133,7 @@ class Engine {
 			if(!canFind(elementList.keys, elementType.connectionHost)) {
 				if(canFind(asasmContent, "Tried to connect to proxy but connection was null")) {
 					elementList[elementType.connectionHost] = asasm.name;
-					writefln("Found connectionHost: %s", baseName(asasm.name));
+					cwritefln("Found connectionHost: %s".color(fg.cyan), baseName(asasm.name));
 					continue;
 				}
 			}
@@ -134,11 +141,11 @@ class Engine {
 			if(!canFind(elementList.keys, elementType.rsaKey)) {
 				if(canFind(asasmContent, "Invalid DH prime and generator")) {
 					elementList[elementType.rsaKey] = asasm.name;
-					writefln("Found rsaKey: %s", baseName(asasm.name));
+					cwritefln("Found rsaKey: %s".color(fg.cyan), baseName(asasm.name));
 					continue;
 				}
 			}
-			
+
 			if(elementList.length == elementTypeCount) {
 				workers.stop();
 			}
@@ -220,7 +227,7 @@ class Engine {
 										   stat = patchStat.success;
 									   }
 									   line = line.replace(line, asasmSpace ~ " pushint            65290" ~ asasmReturn);									   
-								}
+								   }
 							}
 						}
 						newFileContent.put(line ~ asasmReturn);
@@ -265,7 +272,7 @@ class Engine {
 				throw new Exception("Failed to patch " ~ to!string(element) ~ ", need to be updated??");
 
 			std.file.write(elementList[element], newFileContent.data);
-			writefln("%s sucessfully patched!", to!string(element));
+			cwritefln("%s sucessfully patched!".color(fg.cyan), to!string(element));
 		}
 	}
 
@@ -295,10 +302,5 @@ class Engine {
 		rename(originalFilePath, setExtension(originalFilePath, ".bak"));
 		writeln("Copy the patched file...");
 		copy(tempFilePath, originalFilePath);
-	}
-
-	private void cleanupTmpDirectory() {
-		writeln("Deleting temporary directory..");
-		rmdirRecurse(tempDirectory);
 	}
 }

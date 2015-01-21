@@ -1,0 +1,23 @@
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{33C1234B-20AE-424D-BEA7-0B1B0176C4FF}") = "sulkadasm", "sulkadasm.visualdproj", "{40FC067B-8745-405A-829D-2305BA019640}"
+	ProjectSection(ProjectDependencies) = postProject
+		{A1A54D96-98ED-42E2-94FB-4691D23BA77D} = {A1A54D96-98ED-42E2-94FB-4691D23BA77D}
+	EndProjectSection
+EndProject
+Project("{33C1234B-20AE-424D-BEA7-0B1B0176C4FF}") = "colorize", "colorize.visualdproj", "{A1A54D96-98ED-42E2-94FB-4691D23BA77D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		debug|Win32 = debug|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A1A54D96-98ED-42E2-94FB-4691D23BA77D}.debug|Win32.ActiveCfg = debug|Win32
+		{A1A54D96-98ED-42E2-94FB-4691D23BA77D}.debug|Win32.Build.0 = debug|Win32
+		{40FC067B-8745-405A-829D-2305BA019640}.debug|Win32.ActiveCfg = debug|Win32
+		{40FC067B-8745-405A-829D-2305BA019640}.debug|Win32.Build.0 = debug|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
