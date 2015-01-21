@@ -71,7 +71,7 @@ class Engine {
 	}
 
 	private void createTempDirectory() {
-		this.tempDirectory = getcwd() ~ "\\.tmp\\";
+		this.tempDirectory = getcwd() ~ "/.tmp/";
 
 		if(exists(this.tempDirectory)) {
 			cleanupTempDirectory();
@@ -280,7 +280,7 @@ class Engine {
 		writeln("Replacing asasm resources...");
 
 		foreach (abc; abcElementList) {
-			string asasmPath = format("%s\\%s.main.asasm", tempDirectory ~ abc, abc);
+			string asasmPath = format("%s/%s.main.asasm", tempDirectory ~ abc, abc);
 			writefln("Replacing %s", abc);
 			rabcasm.execute(asasmPath);
 		}
@@ -291,7 +291,7 @@ class Engine {
 
 		uint count;		
 		foreach (abc; abcElementList) {
-			string abcPath = format("%s\\%s.main.abc", tempDirectory ~ abc, abc);
+			string abcPath = format("%s/%s.main.abc", tempDirectory ~ abc, abc);
 			writefln("Replacing %s", abc);
 			abcreplace.execute([tempFilePath, to!string(count++), abcPath]);
 		}
