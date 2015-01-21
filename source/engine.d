@@ -158,7 +158,7 @@ class Engine {
 	private void patchFiles() {
 		writeln("Patching files...");
 
-		foreach (element; parallel(elementList.keys.sort)) {
+		foreach (ref element; parallel(elementList.keys.sort)) {
 			auto newFileContent = appender!string();
 			patchStat stat = patchStat.finding;
 
@@ -279,7 +279,7 @@ class Engine {
 	private void replaceAsasm() {
 		writeln("Replacing asasm resources...");
 
-		foreach (abc; abcElementList) {
+		foreach (ref abc; abcElementList) {
 			string asasmPath = format("%s/%s.main.asasm", tempDirectory ~ abc, abc);
 			writefln("Replacing %s", abc);
 			rabcasm.execute(asasmPath);
@@ -289,8 +289,8 @@ class Engine {
 	private void replaceAbc() {
 		writeln("Replacing abc resources...");
 
-		uint count;		
-		foreach (abc; abcElementList) {
+		uint count = 0;		
+		foreach (ref abc; abcElementList) {
 			string abcPath = format("%s/%s.main.abc", tempDirectory ~ abc, abc);
 			writefln("Replacing %s", abc);
 			abcreplace.execute([tempFilePath, to!string(count++), abcPath]);
