@@ -125,7 +125,7 @@ class Engine {
 			if(!canFind(elementList.keys, elementType.domainValidator)) {
 				if(canFind(asasmContent, r"^([\\-a-z0-9.]+\\.)?varoke\\.net$")) {
 					elementList[elementType.domainValidator] = asasm.name;
-					cwriteln("Found domainValidator".color(fg.cyan), baseName(stripExtension(asasm.name)));
+					cwritefln("Found domainValidator: %s".color(fg.cyan), baseName(stripExtension(asasm.name)));
 					continue;
 				}
 			}
