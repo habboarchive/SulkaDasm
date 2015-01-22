@@ -9,5 +9,10 @@
     },
     "subPackages": [
         "./rabcdasm/"
-    ]
+    ],
+    "buildTypes": {
+		"release-noinline": {
+			"buildOptions": ["releaseMode", "optimize"]
+		}
+	}
 }
