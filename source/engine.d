@@ -125,7 +125,7 @@ class Engine {
 			if(!canFind(elementList.keys, elementType.domainValidator)) {
 				if(canFind(asasmContent, r"^([\\-a-z0-9.]+\\.)?varoke\\.net$")) {
 					elementList[elementType.domainValidator] = asasm.name;
-					cwritefln("Found domainValidator: %s".color(fg.cyan), baseName(asasm.name));
+					cwriteln("Found domainValidator".color(fg.cyan), baseName(stripExtension(asasm.name)));
 					continue;
 				}
 			}
@@ -133,7 +133,7 @@ class Engine {
 			if(!canFind(elementList.keys, elementType.connectionHost)) {
 				if(canFind(asasmContent, "Tried to connect to proxy but connection was null")) {
 					elementList[elementType.connectionHost] = asasm.name;
-					cwritefln("Found connectionHost: %s".color(fg.cyan), baseName(asasm.name));
+					cwritefln("Found connectionHost: %s".color(fg.cyan), baseName(stripExtension(asasm.name)));
 					continue;
 				}
 			}
@@ -141,7 +141,7 @@ class Engine {
 			if(!canFind(elementList.keys, elementType.rsaKey)) {
 				if(canFind(asasmContent, "Invalid DH prime and generator")) {
 					elementList[elementType.rsaKey] = asasm.name;
-					cwritefln("Found rsaKey: %s".color(fg.cyan), baseName(asasm.name));
+					cwritefln("Found rsaKey: %s".color(fg.cyan), baseName(stripExtension(asasm.name)));
 					continue;
 				}
 			}
@@ -158,7 +158,7 @@ class Engine {
 	private void patchFiles() {
 		writeln("Patching files...");
 
-		foreach (ref element; parallel(elementList.keys.sort)) {
+		foreach (ref element; elementList.keys.sort) {
 			auto newFileContent = appender!string();
 			patchStat stat = patchStat.finding;
 
@@ -271,8 +271,8 @@ class Engine {
 			if(stat != patchStat.success)
 				throw new Exception("Failed to patch " ~ to!string(element) ~ ", need to be updated??");
 
-			std.file.write(elementList[element], newFileContent.data);
 			cwritefln("%s sucessfully patched!".color(fg.cyan), to!string(element));
+			std.file.write(elementList[element], newFileContent.data);			
 		}
 	}
 
