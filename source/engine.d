@@ -49,6 +49,10 @@ class Engine {
 		this.fileNameWihoutExtension = baseName(stripExtension(filePath));
 		this.tempFilePath = tempDirectory ~ fileName;
 
+		if(disableRc4) {
+			cwriteln("Rc4 will be disabled!".color(fg.yellow));
+		}
+
 		try
 		{			
 			prepareFile();
