@@ -12,6 +12,9 @@ import std.parallelism;
 import colorize : fg, color, cwriteln, cwritefln;
 import abcexport, abcreplace, rabcdasm, rabcasm;
 import utils;
+import magicprocessing.rsakeymodifier;
+import magicprocessing.connectionhostmodifier;
+import magicprocessing.domainvalidatordisabler;
 
 class Engine {
 	string rsaN;
@@ -22,13 +25,9 @@ class Engine {
 	string tempFilePath;
 	string originalFilePath;	
 	string fileName;
-	string fileNameWihoutExtension;
-
-	string asasmSpace = "     ";
-	string asasmReturn = "\r\n";
-
-	enum patchStat { finding, started, success }
-	enum elementType { domainValidator, connectionHost, rsaKey }
+	string fileNameWihoutExtension;	
+	
+	enum elementType { domainValidator, connectionHost, rsaKey, rc4 }
 	string[elementType] elementList;
 	string[] abcElementList;
 
@@ -49,7 +48,7 @@ class Engine {
 		this.fileNameWihoutExtension = baseName(stripExtension(filePath));
 		this.tempFilePath = tempDirectory ~ fileName;
 
-		if(disableRc4) {
+		if(this.disableRc4) {
 			cwriteln("Rc4 will be disabled!".color(fg.yellow));
 		}
 
@@ -117,7 +116,8 @@ class Engine {
 	private void findRequiredFiles() {
 		writeln("Searching required asasm files...");
 
-		auto elementTypeCount = [ __traits(allMembers, elementType) ].length;
+		auto elementTypeCount = [ __traits(allMembers, elementType) ].length - 1;
+		//elementTypeCount--;
 
 		auto asasmFiles = dirEntries(tempDirectory, "*.asasm", SpanMode.depth);
 
@@ -142,13 +142,21 @@ class Engine {
 				}
 			}
 
-			if(!canFind(elementList.keys, elementType.rsaKey)) {
+			if(!this.disableRc4 && !canFind(elementList.keys, elementType.rsaKey)) {
 				if(canFind(asasmContent, "Invalid DH prime and generator")) {
 					elementList[elementType.rsaKey] = asasm.name;
 					cwritefln("Found rsaKey: %s".color(fg.cyan), baseName(stripExtension(asasm.name)));
 					continue;
 				}
 			}
+
+			/*if(this.disableRc4 && !canFind(elementList.keys, elementType.rc4)) {
+				if(canFind(asasmContent, "Invalid DH prime and generator")) {
+					elementList[elementType.rc4] = asasm.name;
+					cwritefln("Found rsaKey: %s".color(fg.cyan), baseName(stripExtension(asasm.name)));
+					continue;
+				}
+			}*/
 
 			if(elementList.length == elementTypeCount) {
 				workers.stop();
@@ -163,120 +171,37 @@ class Engine {
 		writeln("Patching files...");
 
 		foreach (ref element; elementList.keys.sort) {
-			auto newFileContent = appender!string();
-			patchStat stat = patchStat.finding;
+			bool isPatchSuccess = false;
 
 			switch(element) 
 			{
 				case elementType.domainValidator:
-					bool firstPatchLocked = false;
-					bool secondPatchLocked = true;
-
-					auto asasmContent = to!string(cast(char[])read(elementList[element]));
-
-					foreach(string line; utils.readLines(asasmContent)) {
-						if(stat != patchStat.success) {
-							if(!firstPatchLocked) {
-								if(stat == patchStat.finding && canFind(line, "getlocal0")) {
-									stat = patchStat.started;
-									continue;									
-								} else if(stat == patchStat.started) {
-									if(canFind(line, "returnvoid")) {
-										firstPatchLocked = true;
-										secondPatchLocked = false;
-										stat = patchStat.finding;
-									}
-									continue;
-								}
-							}
-
-							if(!secondPatchLocked) {
-								if(stat == patchStat.finding && canFind(line, r"^([\\-a-z0-9.]+\\.)?habbo\\.com\\.(br|es|tr)$")) {
-									stat = patchStat.started;
-								} else if(stat == patchStat.started && canFind(line, "returnvalue")) {
-									newFileContent.put(asasmSpace ~ "pushtrue" ~ asasmReturn);
-									stat = patchStat.success;
-								}
-							}
-						}
-						newFileContent.put(line ~ asasmReturn);
-					}
+					auto domainValidatorDisabler = new DomainValidatorDisabler(elementList[element]);
+					isPatchSuccess = domainValidatorDisabler.Patch();
 					break;
 
 				case elementType.connectionHost:
-					bool firstPatchLocked = false;
-					bool secondPatchLocked = true;
-
-					auto asasmContent = to!string(cast(char[])read(elementList[element]));
-
-					foreach(string line; utils.readLines(asasmContent)) {
-						if(!stat != patchStat.success) {
-							if(!firstPatchLocked) {							
-								if(stat == patchStat.finding && canFind(line, "parseInt")) {
-									stat = patchStat.started;
-								} else if(stat == patchStat.started && canFind(line, "getlocal            6")) {
-									newFileContent.put(asasmSpace ~ " findpropstrict      QName(PackageNamespace(\"\"), \"getProperty\")" ~ asasmReturn);
-									newFileContent.put(asasmSpace ~ " pushstring          \"connection.info.host\"" ~ asasmReturn);
-									newFileContent.put(asasmSpace ~ " callproperty        QName(PackageNamespace(\"\"), \"getProperty\"), 1" ~ asasmReturn);
-									firstPatchLocked = true;
-									secondPatchLocked = false;
-									continue;
-								}
-							} else if(!secondPatchLocked) {
-								if(canFind(line, "65244") || canFind(line, "65185") || canFind(line, "65191") || canFind(line, "65189")
-								   || canFind(line, "65188") || canFind(line, "65174") || canFind(line, "65238") || canFind(line, "65184")
-								   || canFind(line, "65171") || canFind(line, "65172")) {
-									   if(canFind(line, "65172")) {
-										   secondPatchLocked = true;
-										   stat = patchStat.success;
-									   }
-									   line = line.replace(line, asasmSpace ~ " pushint            65290" ~ asasmReturn);									   
-								   }
-							}
-						}
-						newFileContent.put(line ~ asasmReturn);
-					}
+					auto connectionHostModifier = new ConnectionHostModifier(elementList[element]);
+					isPatchSuccess = connectionHostModifier.Patch();
 					break;
 
-
 				case elementType.rsaKey:
-					bool canExecutePrePatch = false;
+					auto rsaKeyModifier = new RsaKeyModifier(elementList[element], rsaN, rsaE);
+					isPatchSuccess = rsaKeyModifier.Patch();
+					break;
 
-					auto asasmContent = to!string(cast(char[])read(elementList[element]));
+				case elementType.rc4:
 
-					foreach(string line; utils.readLines(asasmContent)) {
-						if(!stat != patchStat.success) {
-							if(stat == patchStat.finding && canFind(line, "KeyObfuscator")) {								
-								stat = patchStat.started;
-								newFileContent.put(asasmSpace ~ format(" pushstring          \"%s\"", rsaN) ~ asasmReturn);
-								continue;
-							} else if(stat == patchStat.started && !canFind(line, "KeyObfuscator")) {
-								continue;
-							} else if(stat == patchStat.started && canFind(line, "KeyObfuscator")) {
-								newFileContent.put(asasmSpace ~ format(" pushstring          \"%s\"", rsaE) ~ asasmReturn);
-								canExecutePrePatch = true;
-								stat = patchStat.success;
-								continue;
-							}
-						}
-
-						if(canExecutePrePatch) {
-							canExecutePrePatch = false;							
-							continue;
-						}
-						newFileContent.put(line ~ asasmReturn);
-					}
 					break;
 
 				default:
 					throw new Exception("Unknown element Type of " ~ to!string(element));
 			}
 
-			if(stat != patchStat.success)
+			if(!isPatchSuccess)
 				throw new Exception("Failed to patch " ~ to!string(element) ~ ", need to be updated??");
 
-			cwritefln("%s sucessfully patched!".color(fg.cyan), to!string(element));
-			std.file.write(elementList[element], newFileContent.data);			
+			cwritefln("%s successfully patched!".color(fg.cyan), to!string(element));
 		}
 	}
 
