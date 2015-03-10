@@ -107,9 +107,13 @@
     <Folder name="magicprocessing">
      <File path="source\magicprocessing\connectionhostmodifier.d" />
      <File path="source\magicprocessing\domainvalidatordisabler.d" />
+     <File path="source\magicprocessing\encoderdisabler.d" />
+     <File path="source\magicprocessing\packetjumper.d" />
      <File path="source\magicprocessing\processing.d" />
-     <File path="source\magicprocessing\rc4disabler.d" />
      <File path="source\magicprocessing\rsakeymodifier.d" />
+    </Folder>
+    <Folder name="model">
+     <File path="source\model\methodmodel.d" />
     </Folder>
     <File path="source\app.d" />
     <File path="source\engine.d" />

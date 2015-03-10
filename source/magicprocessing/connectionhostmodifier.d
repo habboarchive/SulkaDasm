@@ -50,8 +50,10 @@ class ConnectionHostModifier : Processing {
 			newFileContent.put(line ~ asasmReturn);
 		}
 
+		if(stat != patchStat.success) return false;
+
 		write(this.asasmFilePath, newFileContent.data);
 
-		return stat == patchStat.success;
+		return true;
 	}
 }

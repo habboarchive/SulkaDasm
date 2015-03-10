@@ -9,16 +9,21 @@ import std.algorithm;
 import std.container;
 import std.array;
 import std.parallelism;
+
 import colorize : fg, color, cwriteln, cwritefln;
 import abcexport, abcreplace, rabcdasm, rabcasm;
+
 import utils;
 import magicprocessing.rsakeymodifier;
 import magicprocessing.connectionhostmodifier;
 import magicprocessing.domainvalidatordisabler;
+import magicprocessing.encoderdisabler;
+import magicprocessing.packetjumper;
 
 class Engine {
 	string rsaN;
 	string rsaE;
+	string allowedConnectionHost;
 	bool disableRc4;
 	
 	string tempDirectory;
@@ -27,13 +32,14 @@ class Engine {
 	string fileName;
 	string fileNameWihoutExtension;	
 	
-	enum elementType { domainValidator, connectionHost, rsaKey, rc4 }
+	enum elementType { domainValidator, connectionHost, rsaKey, encoder }
 	string[elementType] elementList;
 	string[] abcElementList;
 
-	this(string rsaN, string rsaE, bool disableRc4) {
+	this(string rsaN, string rsaE, bool disableRc4, string allowedConnectionHost) {
 		this.rsaN = rsaN;
 		this.rsaE = rsaE;
+		this.allowedConnectionHost = allowedConnectionHost;
 		this.disableRc4 = disableRc4;
 	}
 
@@ -50,6 +56,10 @@ class Engine {
 
 		if(this.disableRc4) {
 			cwriteln("Rc4 will be disabled!".color(fg.yellow));
+		}
+
+		if(this.allowedConnectionHost != null) {
+			cwritefln("Allowed connection host will be set to: %s".color(fg.yellow), this.allowedConnectionHost);
 		}
 
 		try
@@ -116,8 +126,8 @@ class Engine {
 	private void findRequiredFiles() {
 		writeln("Searching required asasm files...");
 
-		auto elementTypeCount = [ __traits(allMembers, elementType) ].length - 1;
-		//elementTypeCount--;
+		auto elementTypeCount = [ __traits(allMembers, elementType) ].length;
+		elementTypeCount -= !this.disableRc4 ? 1 : 0;
 
 		auto asasmFiles = dirEntries(tempDirectory, "*.asasm", SpanMode.depth);
 
@@ -142,7 +152,7 @@ class Engine {
 				}
 			}
 
-			if(!this.disableRc4 && !canFind(elementList.keys, elementType.rsaKey)) {
+			if(!canFind(elementList.keys, elementType.rsaKey)) {
 				if(canFind(asasmContent, "Invalid DH prime and generator")) {
 					elementList[elementType.rsaKey] = asasm.name;
 					cwritefln("Found rsaKey: %s".color(fg.cyan), baseName(stripExtension(asasm.name)));
@@ -150,21 +160,21 @@ class Engine {
 				}
 			}
 
-			/*if(this.disableRc4 && !canFind(elementList.keys, elementType.rc4)) {
-				if(canFind(asasmContent, "Invalid DH prime and generator")) {
-					elementList[elementType.rc4] = asasm.name;
-					cwritefln("Found rsaKey: %s".color(fg.cyan), baseName(stripExtension(asasm.name)));
+			if(this.disableRc4 && !canFind(elementList.keys, elementType.encoder)) {
+				if(canFind(asasmContent, "connected") && canFind(asasmContent, "writeBytes")) {
+					elementList[elementType.encoder] = asasm.name;
+					cwritefln("Found encoder: %s".color(fg.cyan), baseName(stripExtension(asasm.name)));
 					continue;
 				}
-			}*/
+			}			
 
-			if(elementList.length == elementTypeCount) {
+			if(elementList.length >= elementTypeCount) {
 				workers.stop();
 			}
 		}
 
 		if(elementList.length != elementTypeCount)
-			throw new Exception("Could not found all required files, need to be updated??");
+			throw new Exception("Could not find all required files, damn!");
 	}
 
 	private void patchFiles() {
@@ -172,26 +182,33 @@ class Engine {
 
 		foreach (ref element; elementList.keys.sort) {
 			bool isPatchSuccess = false;
+			string asasmPath = elementList[element];
 
 			switch(element) 
 			{
 				case elementType.domainValidator:
-					auto domainValidatorDisabler = new DomainValidatorDisabler(elementList[element]);
+					auto domainValidatorDisabler = new DomainValidatorDisabler(asasmPath);
 					isPatchSuccess = domainValidatorDisabler.Patch();
 					break;
 
 				case elementType.connectionHost:
-					auto connectionHostModifier = new ConnectionHostModifier(elementList[element]);
+					auto connectionHostModifier = new ConnectionHostModifier(asasmPath);
 					isPatchSuccess = connectionHostModifier.Patch();
 					break;
 
 				case elementType.rsaKey:
-					auto rsaKeyModifier = new RsaKeyModifier(elementList[element], rsaN, rsaE);
-					isPatchSuccess = rsaKeyModifier.Patch();
+					if(!this.disableRc4) {
+						auto rsaKeyModifier = new RsaKeyModifier(asasmPath, rsaN, rsaE);
+						isPatchSuccess = rsaKeyModifier.Patch();
+					} else {
+						auto packetJumper = new PacketJumper(asasmPath);
+						isPatchSuccess = packetJumper.Patch();
+					}
 					break;
 
-				case elementType.rc4:
-
+				case elementType.encoder:
+					auto encoderDisabler = new EncoderDisabler(asasmPath);
+					isPatchSuccess = encoderDisabler.Patch();
 					break;
 
 				default:
@@ -199,7 +216,7 @@ class Engine {
 			}
 
 			if(!isPatchSuccess)
-				throw new Exception("Failed to patch " ~ to!string(element) ~ ", need to be updated??");
+				throw new Exception("Failed to patch " ~ to!string(element) ~ ", damn!");
 
 			cwritefln("%s successfully patched!".color(fg.cyan), to!string(element));
 		}

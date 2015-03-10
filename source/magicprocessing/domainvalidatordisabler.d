@@ -16,18 +16,18 @@ class DomainValidatorDisabler : Processing {
 	}
 
 	override bool Patch() {
-		auto asasmContent = to!string(cast(char[])read(this.asasmFilePath));
+		super.postProcess();
 		auto newFileContent = appender!string();
 
 		bool firstPatchLocked = false;
 		bool secondPatchLocked = true;
 
-		foreach(string line; utils.readLines(asasmContent)) {
+		foreach(string line; utils.readLines(this.rawContent)) {
 			if(stat != patchStat.success) {
 				if(!firstPatchLocked) {
 					if(stat == patchStat.finding && canFind(line, "getlocal0")) {
 						stat = patchStat.started;
-						continue;									
+						continue;
 					} else if(stat == patchStat.started) {
 						if(canFind(line, "returnvoid")) {
 							firstPatchLocked = true;
@@ -50,8 +50,10 @@ class DomainValidatorDisabler : Processing {
 			newFileContent.put(line ~ asasmReturn);
 		}
 
+		if(stat != patchStat.success) return false;
+
 		write(this.asasmFilePath, newFileContent.data);
 
-		return stat == patchStat.success;
+		return true;
 	}
 }
