@@ -13,7 +13,7 @@ import std.parallelism;
 import colorize : fg, color, cwriteln, cwritefln;
 import abcexport, abcreplace, rabcdasm, rabcasm;
 
-import utils;
+import util.string;
 import magicprocessing.rsakeymodifier;
 import magicprocessing.connectionhostmodifier;
 import magicprocessing.domainvalidatordisabler;
@@ -23,7 +23,6 @@ import magicprocessing.packetjumper;
 class Engine {
 	string rsaN;
 	string rsaE;
-	string allowedConnectionHost;
 	bool disableRc4;
 	
 	string tempDirectory;
@@ -36,10 +35,9 @@ class Engine {
 	string[elementType] elementList;
 	string[] abcElementList;
 
-	this(string rsaN, string rsaE, bool disableRc4, string allowedConnectionHost) {
+	this(string rsaN, string rsaE, bool disableRc4) {
 		this.rsaN = rsaN;
 		this.rsaE = rsaE;
-		this.allowedConnectionHost = allowedConnectionHost;
 		this.disableRc4 = disableRc4;
 	}
 
@@ -56,10 +54,6 @@ class Engine {
 
 		if(this.disableRc4) {
 			cwriteln("Rc4 will be disabled!".color(fg.yellow));
-		}
-
-		if(this.allowedConnectionHost != null) {
-			cwritefln("Allowed connection host will be set to: %s".color(fg.yellow), this.allowedConnectionHost);
 		}
 
 		try
@@ -180,7 +174,7 @@ class Engine {
 	private void patchFiles() {
 		writeln("Patching files...");
 
-		foreach (ref element; elementList.keys.sort) {
+		foreach (ref element; sort(elementList.keys)) {
 			bool isPatchSuccess = false;
 			string asasmPath = elementList[element];
 

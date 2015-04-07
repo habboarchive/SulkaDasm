@@ -115,10 +115,12 @@
     <Folder name="model">
      <File path="source\model\methodmodel.d" />
     </Folder>
+    <Folder name="util">
+     <File path="source\util\string.d" />
+    </Folder>
     <File path="source\app.d" />
     <File path="source\engine.d" />
     <File path="source\properties.d" />
-    <File path="source\utils.d" />
    </Folder>
    <File tool="None" path="dub.json" />
   </Folder>

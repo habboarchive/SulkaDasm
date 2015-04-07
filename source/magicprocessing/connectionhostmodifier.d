@@ -6,7 +6,7 @@ import std.conv;
 import std.file;
 import std.algorithm;
 import magicprocessing.processing;
-import utils;
+import util.string;
 
 class ConnectionHostModifier : Processing {
 
@@ -16,13 +16,15 @@ class ConnectionHostModifier : Processing {
 	}
 
 	override bool Patch() {
+		super.processMethods();
+
 		auto asasmContent = to!string(cast(char[])read(this.asasmFilePath));
 		auto newFileContent = appender!string();
 
 		bool firstPatchLocked = false;
 		bool secondPatchLocked = true;
 
-		foreach(string line; utils.readLines(asasmContent)) {
+		foreach(string line; util.string.readLines(asasmContent)) {
 			if(!stat != patchStat.success) {
 				if(!firstPatchLocked) {							
 					if(stat == patchStat.finding && canFind(line, "parseInt")) {

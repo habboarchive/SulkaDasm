@@ -1,4 +1,4 @@
-module utils;
+module util.string;
 
 import std.algorithm;
 import std.array;

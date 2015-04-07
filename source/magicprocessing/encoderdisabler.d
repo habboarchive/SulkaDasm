@@ -6,7 +6,7 @@ import std.conv;
 import std.file;
 import std.algorithm;
 import magicprocessing.processing;
-import utils;
+import util.string;
 
 class EncoderDisabler : Processing {
 
@@ -16,15 +16,16 @@ class EncoderDisabler : Processing {
 	}
 
 	override bool Patch() {
-		super.postProcess();
 		auto newFileContent = appender!string();
 
 		bool firstPatchLocked = false;
 		bool secondPatchLocked = true;
 		bool canExecutePostPatch = false;
 		bool canExecutePrePatch = false;
+
+		super.processMethods();
 		
-		foreach(string line; utils.readLines(this.rawContent)) {
+		foreach(string line; util.string.readLines(this.rawContent)) {
 			if(stat != patchStat.success) {
 				if(!firstPatchLocked) {
 					if(stat == patchStat.finding && canFind(line, "/instance/send")) {

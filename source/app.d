@@ -10,17 +10,15 @@ void main(string[] args) {
 
 	string rsaN = Properties.defaultRsaN;
 	string rsaE = Properties.defaultRsaE;
-	string allowedConnectionHost = null;
 	bool disableRc4 = false;
 
 	getopt(
 		   args,
 		   "rsaN",  &rsaN,
 		   "rsaE",  &rsaE,
-		   "disableRc4",  &disableRc4,
-		   "allowedConnectionHost",  &allowedConnectionHost);
+		   "disableRc4",  &disableRc4);
 
-	auto engine = new Engine(rsaN, rsaE, disableRc4, allowedConnectionHost);
+	auto engine = new Engine(rsaN, rsaE, disableRc4);
 	engine.executePatch(args[1]);
 }
 
@@ -28,6 +26,6 @@ void printLogo() {
 	cwriteln("############################".color(fg.red));
 	cwritefln("SulkaDasm version %s".color(fg.red), Properties.appVersion);
 	cwriteln("Written by Anthony93260".color(fg.red));
-	cwriteln("anthony93260.net/sulkadasm".color(fg.red));
+	cwriteln("anthony93260.github.io/SulkaDasm".color(fg.red));
 	cwriteln("############################".color(fg.red));
 }

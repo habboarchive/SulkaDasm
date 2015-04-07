@@ -6,7 +6,9 @@ import std.conv;
 import std.file;
 import std.algorithm;
 import magicprocessing.processing;
-import utils;
+import util.string;
+
+import colorize : fg, bg, mode, color, cwriteln, cwritefln;
 
 class DomainValidatorDisabler : Processing {
 
@@ -16,13 +18,14 @@ class DomainValidatorDisabler : Processing {
 	}
 
 	override bool Patch() {
-		super.postProcess();
+		super.processMethods();
+
 		auto newFileContent = appender!string();
 
 		bool firstPatchLocked = false;
 		bool secondPatchLocked = true;
 
-		foreach(string line; utils.readLines(this.rawContent)) {
+		foreach(string line; util.string.readLines(this.rawContent)) {
 			if(stat != patchStat.success) {
 				if(!firstPatchLocked) {
 					if(stat == patchStat.finding && canFind(line, "getlocal0")) {

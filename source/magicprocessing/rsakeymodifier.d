@@ -6,7 +6,7 @@ import std.conv;
 import std.file;
 import std.algorithm;
 import magicprocessing.processing;
-import utils;
+import util.string;
 
 class RsaKeyModifier : Processing {
 
@@ -21,12 +21,13 @@ class RsaKeyModifier : Processing {
 	}
 
 	override bool Patch() {
-		super.postProcess();
+		super.processMethods();
+
 		auto newFileContent = appender!string();
 
 		bool canExecutePrePatch = false;
 
-		foreach(string line; utils.readLines(this.rawContent)) {
+		foreach(string line; util.string.readLines(this.rawContent)) {
 			if(!stat != patchStat.success) {
 				if(stat == patchStat.finding && canFind(line, "KeyObfuscator")) {								
 					stat = patchStat.started;

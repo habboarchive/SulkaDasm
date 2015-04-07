@@ -6,7 +6,7 @@ import std.conv;
 import std.file;
 import std.algorithm;
 import magicprocessing.processing;
-import utils;
+import util.string;
 import model.methodmodel;
 
 class PacketJumper : Processing {
@@ -17,7 +17,7 @@ class PacketJumper : Processing {
 	}
 
 	override bool Patch() {
-		super.postProcess();		
+		super.processMethods();
 		
 		auto sendHelloMethod = findSendHelloMethod();
 		auto helloMethod = findHelloMethod();
@@ -29,7 +29,7 @@ class PacketJumper : Processing {
 		int local2Count = count(sendHelloMethod.content, "getlocal2");
 		int local2Found = 0;
 
-		foreach(string line; utils.readLines(sendHelloMethod.content)) {
+		foreach(string line; util.string.readLines(sendHelloMethod.content)) {
 			if(stat != patchStat.success) {
 				if(stat == patchStat.finding && canFind(line, "getlocal2")) {
 					local2Found++;
