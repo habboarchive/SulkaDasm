@@ -20,9 +20,8 @@ abstract class Processing {
 	
 	bool Patch();
 
-	void processMethods() {
+	void readContent() {
 		rawContent = to!string(cast(char[])read(asasmFilePath));
-		parseMethods();
 	}
 
 	void parseMethods() {		

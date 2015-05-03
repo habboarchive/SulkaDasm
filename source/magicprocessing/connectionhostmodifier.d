@@ -16,7 +16,7 @@ class ConnectionHostModifier : Processing {
 	}
 
 	override bool Patch() {
-		super.processMethods();
+		super.readContent();
 
 		auto asasmContent = to!string(cast(char[])read(this.asasmFilePath));
 		auto newFileContent = appender!string();
@@ -24,7 +24,7 @@ class ConnectionHostModifier : Processing {
 		bool firstPatchLocked = false;
 		bool secondPatchLocked = true;
 
-		foreach(string line; util.string.readLines(asasmContent)) {
+		foreach(ref line; util.string.readLines(asasmContent)) {
 			if(!stat != patchStat.success) {
 				if(!firstPatchLocked) {							
 					if(stat == patchStat.finding && canFind(line, "parseInt")) {

@@ -18,14 +18,14 @@ class DomainValidatorDisabler : Processing {
 	}
 
 	override bool Patch() {
-		super.processMethods();
+		super.readContent();
 
 		auto newFileContent = appender!string();
 
 		bool firstPatchLocked = false;
 		bool secondPatchLocked = true;
 
-		foreach(string line; util.string.readLines(this.rawContent)) {
+		foreach(ref line; util.string.readLines(this.rawContent)) {
 			if(stat != patchStat.success) {
 				if(!firstPatchLocked) {
 					if(stat == patchStat.finding && canFind(line, "getlocal0")) {

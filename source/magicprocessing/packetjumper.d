@@ -17,7 +17,8 @@ class PacketJumper : Processing {
 	}
 
 	override bool Patch() {
-		super.processMethods();
+		super.readContent();
+		super.parseMethods();
 		
 		auto sendHelloMethod = findSendHelloMethod();
 		auto helloMethod = findHelloMethod();
@@ -29,7 +30,7 @@ class PacketJumper : Processing {
 		ulong local2Count = count(sendHelloMethod.content, "getlocal2");
 		ulong local2Found = 0;
 
-		foreach(string line; util.string.readLines(sendHelloMethod.content)) {
+		foreach(ref line; util.string.readLines(sendHelloMethod.content)) {
 			if(stat != patchStat.success) {
 				if(stat == patchStat.finding && canFind(line, "getlocal2")) {
 					local2Found++;

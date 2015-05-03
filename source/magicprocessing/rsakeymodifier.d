@@ -21,13 +21,13 @@ class RsaKeyModifier : Processing {
 	}
 
 	override bool Patch() {
-		super.processMethods();
+		super.readContent();
 
 		auto newFileContent = appender!string();
 
 		bool canExecutePrePatch = false;
 
-		foreach(string line; util.string.readLines(this.rawContent)) {
+		foreach(ref line; util.string.readLines(this.rawContent)) {
 			if(!stat != patchStat.success) {
 				if(stat == patchStat.finding && canFind(line, "KeyObfuscator")) {								
 					stat = patchStat.started;
