@@ -27,8 +27,7 @@ class PacketJumper : Processing {
 
 		auto newMethodContent = appender!string();
 
-		ulong local2Count = count(sendHelloMethod.content, "getlocal2");
-		ulong local2Found = 0;
+		ulong local2Count = count(sendHelloMethod.content, "getlocal2"), local2Found = 0;
 
 		foreach(ref line; util.string.readLines(sendHelloMethod.content)) {
 			if(stat != patchStat.success) {

@@ -33,11 +33,14 @@ class ConnectionHostModifier : Processing {
 						newFileContent.put(asasmSpace ~ " findpropstrict      QName(PackageNamespace(\"\"), \"getProperty\")" ~ asasmReturn);
 						newFileContent.put(asasmSpace ~ " pushstring          \"connection.info.host\"" ~ asasmReturn);
 						newFileContent.put(asasmSpace ~ " callproperty        QName(PackageNamespace(\"\"), \"getProperty\"), 1" ~ asasmReturn);
-						firstPatchLocked = true;
-						secondPatchLocked = false;
+						firstPatchLocked = true;						
 						continue;
 					}
-				} else if(!secondPatchLocked) {
+				} else if(firstPatchLocked && (secondPatchLocked && canFind(line, "65244"))) {
+					secondPatchLocked = false;
+				}
+
+				if(!secondPatchLocked) {
 					if(canFind(line, "65244") || canFind(line, "65185") || canFind(line, "65191") || canFind(line, "65189")
 					   || canFind(line, "65188") || canFind(line, "65174") || canFind(line, "65238") || canFind(line, "65184")
 					   || canFind(line, "65171") || canFind(line, "65172")) {
@@ -48,6 +51,7 @@ class ConnectionHostModifier : Processing {
 						   line = line.replace(line, asasmSpace ~ " pushint            65290" ~ asasmReturn);									   
 					   }
 				}
+
 			}
 			newFileContent.put(line ~ asasmReturn);
 		}

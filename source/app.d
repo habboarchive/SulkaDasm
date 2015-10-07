@@ -5,18 +5,25 @@ import properties, engine;
 void main(string[] args) {
 	printLogo();
 
-	if (args.length < 2)
-		throw new Exception("Usage: SulkaDasm.exe file.swf\n\nOptionnaly:\n--rsaN - Set RSA N Key\n--rsaE - Set RSA E Key\n--disableRc4 - Disable RC4 Encryption");
-
 	string rsaN = Properties.defaultRsaN;
 	string rsaE = Properties.defaultRsaE;
 	bool disableRc4 = false;
 
-	getopt(
+	auto helpInformation = getopt(
 		   args,
-		   "rsaN",  &rsaN,
-		   "rsaE",  &rsaE,
-		   "disableRc4",  &disableRc4);
+		   "rsaN|n", "Set custom RSA N Key.",  &rsaN,
+		   "rsaE|e", "Set custom RSA E Key.",  &rsaE,
+		   "disableRc4", "Disable RC4 Encryption.",  &disableRc4);
+
+	if (args.length < 2) {
+		writeln("Usage: SulkaDasm.exe file.swf");
+		helpInformation.helpWanted = true;
+	}
+
+	if (helpInformation.helpWanted) {
+		defaultGetoptPrinter("optionals options", helpInformation.options);
+		return;
+	}
 
 	auto engine = new Engine(rsaN, rsaE, disableRc4);
 	engine.executePatch(args[1]);

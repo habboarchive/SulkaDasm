@@ -229,7 +229,7 @@ class Engine {
 	private void replaceAbc() {
 		writeln("Replacing abc resources...");
 
-		uint count = 0;		
+		uint count = 0;
 		foreach (ref abc; abcElementList) {
 			string abcPath = format("%s/%s.main.abc", tempDirectory ~ abc, abc);
 			writefln("Replacing %s", abc);
