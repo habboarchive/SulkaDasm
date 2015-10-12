@@ -5,3 +5,6 @@ d:
 os:
   - linux
   - osx
+addons:
+  artifacts: true
+  s3_region: "us-west-1"
