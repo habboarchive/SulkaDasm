@@ -3,6 +3,11 @@
     "description": "Habbo Client Patching Tool",
     "copyright": "Copyright © 2015, Anthony93260",
     "authors": [ "Anthony93260" ],
+	"configurations": [
+		{
+			"targetType": "executable"
+		}
+	],
     "dependencies": {
         "colorize": ">=1.0.5",
         "sulkadasm:rabcdasm": ">=1.0.0"
