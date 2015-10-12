@@ -2,3 +2,6 @@
 language: d
 d:
   - dmd
+os:
+  - linux
+  - osx
