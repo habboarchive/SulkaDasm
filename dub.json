@@ -5,7 +5,8 @@
     "authors": [ "Anthony93260" ],
 	"configurations": [
 		{
-			"targetType": "executable"
+			"targetType": "executable",
+			"name": "executable"
 		}
 	],
     "dependencies": {
@@ -21,3 +22,4 @@
 		}
 	}
 }
+
