@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/anthony93260/SulkaDasm.svg?branch=master)](https://travis-ci.org/anthony93260/SulkaDasm)
+
 # SulkaDasm
 Tool for patching Habbo Client
 
