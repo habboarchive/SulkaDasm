@@ -1,3 +1,4 @@
 # latest dmd
+language: d
 d:
   - dmd
