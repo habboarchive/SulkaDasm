@@ -6,6 +6,5 @@ os:
   - linux
   - osx
 addons:
-  artifacts:
-    permissions: "public"
+  artifacts: true
   s3_region: "us-west-1"
